@@ -1,0 +1,28 @@
+{
+  "name": "foundry-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Foundry Next.js template — clone and customize for a new team project",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@foundry/api-client": "file:../../foundry-npm/packages/api-client",
+    "@foundry/auth-next": "file:../../foundry-npm/packages/auth-next",
+    "@foundry/logger": "file:../../foundry-npm/packages/logger",
+    "@foundry/opa-client": "file:../../foundry-npm/packages/opa-client",
+    "next": "^14.0.0",
+    "next-auth": "^4.24.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.2.0"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "family": "dev-APP_NAME-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "runtimePlatform": {
+    "cpuArchitecture": "ARM64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "executionRoleArn": "arn:aws:iam::AWS_ACCOUNT_ID:role/ECSTaskExecution",
+  "taskRoleArn": "arn:aws:iam::AWS_ACCOUNT_ID:role/EC2Role",
+  "containerDefinitions": [
+    {
+      "name": "APP_NAME",
+      "image": "AWS_ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/dev/APP_NAME:latest",
+      "cpu": 512,
+      "memory": 1024,
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [],
+      "secrets": [
+        { "name": "KEYCLOAK_URL", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/KEYCLOAK_URL" },
+        { "name": "KEYCLOAK_REALM", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/KEYCLOAK_REALM" },
+        { "name": "KEYCLOAK_CLIENT_ID", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/KEYCLOAK_CLIENT_ID" },
+        { "name": "KEYCLOAK_CLIENT_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/KEYCLOAK_CLIENT_SECRET" },
+        { "name": "OPA_URL", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/OPA_URL" },
+        { "name": "OPA_ACCOUNT", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/OPA_ACCOUNT" },
+        { "name": "NEXTAUTH_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/NEXTAUTH_SECRET" },
+        { "name": "NEXTAUTH_URL", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/NEXTAUTH_URL" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/dev/dev-APP_NAME-service",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

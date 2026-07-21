@@ -1,0 +1,108 @@
+name: Release to prod
+
+# Customize APP_* env vars below when creating a new project from this template.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-south-1
+  # --- replace these for your app ---
+  ECR_REPOSITORY: prod/APP_NAME
+  ECS_SERVICE: APP_NAME-service
+  ECS_CLUSTER: prod
+  ECS_TASK_DEFINITION: deploy/prod-task-definition.json
+  CONTAINER_NAME: APP_NAME
+  PARAMETER_PREFIX: /prod/APP_NAME/build/
+  # ----------------------------------
+
+jobs:
+  deploy:
+    runs-on: ubuntu-arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Load build secrets from AWS SSM Parameter Store
+        run: |
+          fetch_parameter() {
+            local env_name="$1"
+            local parameter_name="$2"
+            local value
+
+            echo "Fetching parameter: $parameter_name (Exporting as $env_name)"
+
+            value="$(aws ssm get-parameter \
+              --name "$parameter_name" \
+              --with-decryption \
+              --query 'Parameter.Value' \
+              --output text)"
+
+            printf '%s=%s\n' "$env_name" "$value" >> "$GITHUB_ENV"
+          }
+
+          while IFS=$'\t' read -r parameter_name _; do
+            [[ -z "$parameter_name" ]] && continue
+            fetch_parameter "${parameter_name##*/}" "$parameter_name"
+          done < <(
+            aws ssm get-parameters-by-path \
+              --path "$PARAMETER_PREFIX" \
+              --with-decryption \
+              --recursive \
+              --query 'Parameters[*].[Name,Value]' \
+              --output text
+          )
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push image
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.event.release.tag_name || github.sha }}
+        run: |
+          docker buildx create --use
+          docker buildx build \
+            --platform linux/arm64 \
+            --build-arg KEYCLOAK_URL="$KEYCLOAK_URL" \
+            --build-arg KEYCLOAK_REALM="$KEYCLOAK_REALM" \
+            --build-arg KEYCLOAK_CLIENT_ID="$KEYCLOAK_CLIENT_ID" \
+            --build-arg KEYCLOAK_CLIENT_SECRET="$KEYCLOAK_CLIENT_SECRET" \
+            --build-arg OPA_URL="$OPA_URL" \
+            --build-arg OPA_ACCOUNT="$OPA_ACCOUNT" \
+            --build-arg NEXTAUTH_URL="$NEXTAUTH_URL" \
+            --build-arg NEXTAUTH_SECRET="$NEXTAUTH_SECRET" \
+            --build-arg NEXT_PUBLIC_KEYCLOAK_URL="$NEXT_PUBLIC_KEYCLOAK_URL" \
+            --build-arg NEXT_PUBLIC_KEYCLOAK_REALM="$NEXT_PUBLIC_KEYCLOAK_REALM" \
+            --build-arg NEXT_PUBLIC_KEYCLOAK_CLIENT_ID="$NEXT_PUBLIC_KEYCLOAK_CLIENT_ID" \
+            -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
+            . --push
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
