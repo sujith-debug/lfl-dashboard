@@ -22,13 +22,11 @@ remain owned by the application.
 
 ## Quick start
 
-## Quick start
-
 ```bash
-# Current monorepo only: build local @foundry packages first
-cd foundry-npm && npm install && npm run build && cd ..
+# Auth for GitHub Packages (@foundry/* versioned releases)
+# Create a classic PAT with read:packages, then:
+export NODE_AUTH_TOKEN=<github_pat>
 
-cd templates/nextjs-app
 cp .env.example .env
 # Configure Keycloak, NextAuth, OPA, and DATABASE_URL.
 # Generate NEXTAUTH_SECRET with: openssl rand -base64 32
@@ -43,9 +41,16 @@ npm run dev
 
 Open `http://localhost:3000`. The protected example is available at `/panel`.
 
-> This workspace uses local `file:` dependencies for `@foundry/*` packages.
-> A standalone template repository should replace them with published package
-> versions from the organization npm registry.
+> `@foundry/*` packages are installed from **GitHub Packages** (versioned
+> releases of the separate `foundary-npm` repo). See `.npmrc`. Pin or bump
+> versions in `package.json` when the platform team publishes a new release.
+
+### Docker Compose (includes the app image)
+
+```bash
+export NODE_AUTH_TOKEN=<github_pat>
+docker compose up --build
+```
 
 ## Environment
 

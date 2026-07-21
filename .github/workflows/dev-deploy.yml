@@ -78,6 +78,7 @@ jobs:
           docker buildx create --use
           docker buildx build \
             --platform linux/arm64 \
+            --build-arg NODE_AUTH_TOKEN="${{ secrets.NODE_AUTH_TOKEN }}" \
             --build-arg KEYCLOAK_URL="$KEYCLOAK_URL" \
             --build-arg KEYCLOAK_REALM="$KEYCLOAK_REALM" \
             --build-arg KEYCLOAK_CLIENT_ID="$KEYCLOAK_CLIENT_ID" \
