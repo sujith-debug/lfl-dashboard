@@ -22,12 +22,16 @@ function SignInRedirect() {
   }, [status, callbackUrl, router]);
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui" }}>
-      <p>
-        {status === "authenticated"
-          ? "Signed in — redirecting…"
-          : "Redirecting to Keycloak…"}
-      </p>
+    <main className="flex min-h-screen items-center justify-center p-6">
+      <div className="w-full max-w-sm rounded-2xl border bg-white p-8 text-center shadow-lg shadow-slate-200/60">
+        <div className="mx-auto size-10 animate-spin rounded-full border-4 border-slate-200 border-t-indigo-600" />
+        <h1 className="mt-6 text-xl font-semibold">Signing you in</h1>
+        <p className="mt-2 text-sm text-slate-500">
+          {status === "authenticated"
+            ? "Signed in — redirecting…"
+            : "Redirecting to your identity provider…"}
+        </p>
+      </div>
     </main>
   );
 }
@@ -36,8 +40,8 @@ export default function SignInPage() {
   return (
     <Suspense
       fallback={
-        <main style={{ padding: "2rem", fontFamily: "system-ui" }}>
-          <p>Loading…</p>
+        <main className="flex min-h-screen items-center justify-center p-6">
+          <p className="text-sm text-slate-500">Loading…</p>
         </main>
       }
     >

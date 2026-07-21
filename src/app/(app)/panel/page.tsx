@@ -1,6 +1,7 @@
 import { authOptions, getUserFromSession } from "@/lib/auth";
 import { getProjectService } from "@/modules/projects/server/container";
 import { ProjectsPanel } from "@/modules/projects/components/ProjectsPanel";
+import { AppShell } from "@/components/layout/AppShell";
 import { PanelClientHeader } from "./PanelClientHeader";
 
 /**
@@ -12,9 +13,11 @@ export default async function PanelPage() {
 
   if (!user) {
     return (
-      <main style={{ padding: "2rem", fontFamily: "system-ui" }}>
-        <p>Not signed in.</p>
-      </main>
+      <AppShell>
+        <main className="rounded-2xl border bg-white p-8 shadow-sm">
+          <p className="text-slate-600">Not signed in.</p>
+        </main>
+      </AppShell>
     );
   }
 
@@ -27,12 +30,14 @@ export default async function PanelPage() {
   }
 
   return (
-    <main style={{ padding: "2rem", fontFamily: "system-ui" }}>
-      <PanelClientHeader
-        username={user.username}
-        projectCount={initialCount}
-      />
-      <ProjectsPanel />
-    </main>
+    <AppShell>
+      <main>
+        <PanelClientHeader
+          username={user.username}
+          projectCount={initialCount}
+        />
+        <ProjectsPanel />
+      </main>
+    </AppShell>
   );
 }

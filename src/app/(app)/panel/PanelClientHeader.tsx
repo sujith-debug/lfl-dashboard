@@ -2,6 +2,7 @@
 
 import { buildKeycloakLogoutUrl } from "@foundry/auth-next";
 import { signOut, useSession } from "next-auth/react";
+import { Button } from "@/components/ui/Button";
 
 type PanelClientHeaderProps = {
   username: string;
@@ -41,25 +42,26 @@ export function PanelClientHeader({
   }
 
   return (
-    <header>
-      <h1>Panel</h1>
-      <p>
-        Signed in as <strong>{username}</strong>
-        {projectCount >= 0 ? (
-          <>
-            {" "}
-            · <span>{projectCount} project(s)</span>
-          </>
-        ) : (
-          <>
-            {" "}
-            · <span>projects unavailable</span>
-          </>
-        )}
-      </p>
-      <button type="button" onClick={() => void handleSignOut()}>
+    <header className="flex flex-col gap-5 border-b pb-8 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p className="text-sm font-semibold uppercase tracking-wider text-indigo-600">
+          Workspace
+        </p>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight">Project panel</h1>
+        <p className="mt-2 text-sm text-slate-600">
+          Signed in as <strong className="text-slate-900">{username}</strong>
+          <span className="mx-2 text-slate-300">·</span>
+          {projectCount >= 0
+            ? `${projectCount} project${projectCount === 1 ? "" : "s"}`
+            : "Projects unavailable"}
+        </p>
+      </div>
+      <Button
+        className="self-start bg-white text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:self-auto"
+        onClick={() => void handleSignOut()}
+      >
         Sign out
-      </button>
+      </Button>
     </header>
   );
 }

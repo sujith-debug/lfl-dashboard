@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { Button } from "@/components/ui/Button";
 import type { CreateProjectInput, ProjectDto } from "../contracts";
 
 type CreateProjectFormProps = {
@@ -40,42 +41,46 @@ export function CreateProjectForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{ display: "grid", gap: "0.75rem", maxWidth: 420 }}
-    >
-      <label>
-        Name
+    <form onSubmit={handleSubmit} className="grid gap-5">
+      <label className="grid gap-2 text-sm font-medium text-slate-700">
+        Project name
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          style={{ display: "block", width: "100%", marginTop: 4 }}
+          placeholder="Customer portal"
+          className="w-full rounded-lg border bg-white px-3.5 py-2.5 text-slate-950 shadow-sm outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
         />
       </label>
-      <label>
+      <label className="grid gap-2 text-sm font-medium text-slate-700">
         Slug
         <input
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
           required
           pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
-          style={{ display: "block", width: "100%", marginTop: 4 }}
+          placeholder="customer-portal"
+          className="w-full rounded-lg border bg-white px-3.5 py-2.5 font-mono text-sm text-slate-950 shadow-sm outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
         />
       </label>
-      <label>
+      <label className="grid gap-2 text-sm font-medium text-slate-700">
         Description
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          style={{ display: "block", width: "100%", marginTop: 4 }}
+          placeholder="What is this project for?"
+          className="w-full resize-y rounded-lg border bg-white px-3.5 py-2.5 text-slate-950 shadow-sm outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
         />
       </label>
-      {error ? <p style={{ color: "crimson", margin: 0 }}>{error}</p> : null}
-      <button type="submit" disabled={pending}>
+      {error ? (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      ) : null}
+      <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Creating…" : "Create project"}
-      </button>
+      </Button>
     </form>
   );
 }
