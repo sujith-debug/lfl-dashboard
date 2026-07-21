@@ -9,6 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "node --require ./scripts/mock-server-only.cjs --import tsx --test src/**/*.test.ts",
+    "foundry:local": "node scripts/switch-foundry-packages.mjs local",
+    "foundry:github": "node scripts/switch-foundry-packages.mjs github",
+    "foundry:status": "node scripts/switch-foundry-packages.mjs status",
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
@@ -19,14 +22,18 @@
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
+  "foundryPackages": {
+    "githubVersion": "^0.1.0",
+    "localDirectory": "../../foundry-npm/packages"
+  },
   "dependencies": {
-    "@foundry/api-client": "^0.1.0",
-    "@foundry/api-core": "^0.1.0",
-    "@foundry/auth-next": "^0.1.0",
-    "@foundry/http-next": "^0.1.0",
-    "@foundry/logger": "^0.1.0",
-    "@foundry/opa-client": "^0.1.0",
-    "@foundry/prisma": "^0.1.0",
+    "@foundry/api-client": "file:../../foundry-npm/packages/api-client",
+    "@foundry/api-core": "file:../../foundry-npm/packages/api-core",
+    "@foundry/auth-next": "file:../../foundry-npm/packages/auth-next",
+    "@foundry/http-next": "file:../../foundry-npm/packages/http-next",
+    "@foundry/logger": "file:../../foundry-npm/packages/logger",
+    "@foundry/opa-client": "file:../../foundry-npm/packages/opa-client",
+    "@foundry/prisma": "file:../../foundry-npm/packages/prisma",
     "@prisma/client": "^6.5.0",
     "next": "^14.0.0",
     "next-auth": "^4.24.5",

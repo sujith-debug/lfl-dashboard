@@ -45,6 +45,33 @@ Open `http://localhost:3000`. The protected example is available at `/panel`.
 > releases of the separate `foundary-npm` repo). See `.npmrc`. Pin or bump
 > versions in `package.json` when the platform team publishes a new release.
 
+### Switch Foundry package source
+
+Use local package sources while developing Foundry packages:
+
+```bash
+npm run foundry:local
+```
+
+Switch back to versioned packages from GitHub Packages:
+
+```bash
+npm run foundry:github
+```
+
+`foundry:github` uses `NODE_AUTH_TOKEN` when set; otherwise it reuses your
+GitHub CLI login via `gh auth token` (requires `gh auth login` with
+`read:packages`). Both commands update `package.json`, remove stale
+`node_modules/@foundry` links, reinstall from the selected source, and refresh
+`package-lock.json`. Use `npm run foundry:status` to show the declared source
+and the installed target. The local package directory and GitHub version are
+configured in the `foundryPackages` section of `package.json`. Add
+`-- --no-install` to either switch command when only `package.json` should be
+changed.
+
+GitHub mode requires the `@foundry/*` packages to already be published to
+GitHub Packages under the `foundry` org (GitHub scopes must match the owner).
+
 ### Docker Compose (includes the app image)
 
 ```bash
