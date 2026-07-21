@@ -1,29 +1,78 @@
+<<<<<<< HEAD
 
 # Foundry Next.js template
+=======
+# Foundry Next.js Application Template
+>>>>>>> b19aa78 (authentication done)
 
-Clone this folder (or use it as a GitHub template repo) when starting a new team project.
+A production-oriented full-stack Next.js template for Foundry teams. It provides
+Keycloak authentication, OPA authorization, PostgreSQL access through Prisma,
+OpenTelemetry observability, versioned APIs, tests, and ECS deployment workflows.
 
-Auth, logging, HTTP, and OPA come from **foundry-npm** packages — do not copy those
-implementations into the app. Data access is **app-owned** via Prisma (PostgreSQL).
+Use this repository as a starting point for a product application. Shared platform
+concerns come from `@foundry/*` packages; product modules and the Prisma schema
+remain owned by the application.
+
+## Prerequisites
+
+- Node.js 20 and npm
+- Docker with Docker Compose
+- Access to Keycloak and OPA
+- PostgreSQL 14+ (the included Compose service is suitable for local development)
+
+## Quick start
 
 ## Quick start
 
 ```bash
-# From foundry root — build shared packages first
+# Current monorepo only: build local @foundry packages first
 cd foundry-npm && npm install && npm run build && cd ..
 
 cd templates/nextjs-app
 cp .env.example .env
-# fill Keycloak + NextAuth + OPA + DATABASE_URL
+# Configure Keycloak, NextAuth, OPA, and DATABASE_URL.
+# Generate NEXTAUTH_SECRET with: openssl rand -base64 32
 
-# Local Postgres
 docker compose up -d
 npm install
 npm run db:generate
-npm run db:migrate:dev   # or: npx prisma migrate deploy
-npm run db:seed          # optional
+npm run db:migrate:dev
+npm run db:seed
 npm run dev
 ```
+
+Open `http://localhost:3000`. The protected example is available at `/panel`.
+
+> This workspace uses local `file:` dependencies for `@foundry/*` packages.
+> A standalone template repository should replace them with published package
+> versions from the organization npm registry.
+
+## Environment
+
+Copy `.env.example` to `.env`. The main settings are:
+
+- `KEYCLOAK_*`: Keycloak realm and client configuration.
+- `NEXTAUTH_URL` and `NEXTAUTH_SECRET`: NextAuth URL and signing secret.
+- `OPA_URL` and `OPA_ACCOUNT`: OPA decision endpoint and application account.
+- `DATABASE_URL`: PostgreSQL connection URL using username/password.
+- `LOG_LEVEL`: Pino log level.
+- `OTEL_*`: OpenTelemetry service name and OTLP trace exporter endpoint.
+
+Never commit `.env` or pass `DATABASE_URL` as a Docker build argument.
+
+### Keycloak client settings (local)
+
+For client `foundry-template` in realm `dev`, set:
+
+| Field | Value |
+|-------|-------|
+| Valid redirect URIs | `http://localhost:3000/api/auth/callback/keycloak` |
+| Valid post logout redirect URIs | `http://localhost:3000` |
+| Web origins | `http://localhost:3000` |
+
+Wildcards also work in development (`http://localhost:3000/*`). Logout sends
+`post_logout_redirect_uri=http://localhost:3000` — that exact value must be
+allowed or Keycloak shows **Invalid redirect uri**.
 
 ## Architecture (module-first)
 
@@ -44,7 +93,7 @@ prisma/
   schema.prisma migrations/ seed.ts
 ```
 
-**Boundaries**
+### Boundaries
 
 | Layer | Runs where | Imports |
 |-------|------------|---------|
@@ -54,6 +103,18 @@ prisma/
 | Client Components | browser | `/api/v1/...` via hooks |
 
 Do **not** split into separate `frontend/` and `backend/` trees.
+
+Each business capability belongs in `src/modules/<name>`:
+
+- `contracts/`: Zod schemas and browser-safe DTO types.
+- `components/` and `hooks/`: client-facing UI and API consumption.
+- `server/models/`: application domain types.
+- `server/repositories/`: persistence interfaces and Prisma implementations.
+- `server/services/`: use cases and domain orchestration.
+- `server/container.ts`: server-side dependency composition.
+
+API route handlers should remain thin: authenticate, authorize, parse input,
+call a service, and format the response.
 
 ### Project module (reference vertical slice)
 
@@ -73,10 +134,15 @@ Do **not** split into separate `frontend/` and `backend/` trees.
 postgresql://USER:PASSWORD@HOST:5432/DBNAME?schema=public&sslmode=require
 ```
 
-### Scripts
+## Commands
 
 | Script | Purpose |
 |--------|---------|
+| `dev` | start the local Next.js development server |
+| `build` | generate Prisma Client and create a production build |
+| `start` | run the production Next.js server |
+| `lint` | run Next.js linting |
+| `test` | run Node-based unit tests |
 | `db:generate` | `prisma generate` |
 | `db:migrate:dev` | create/apply migrations locally |
 | `db:migrate:deploy` | apply migrations (CI / ECS one-off) |
@@ -127,11 +193,22 @@ postgresql://USER:PASSWORD@HOST:5432/DBNAME?schema=public&sslmode=require
 4. **One-off ECS task** runs `npx prisma migrate deploy` (uses runtime `DATABASE_URL` from task secrets)
 5. ECS service updated from task definition JSON
 
-## Tests
+## Verification
 
 ```bash
+npm run lint
 npm test
+npm run build
 ```
 
 Project service unit tests use an in-memory fake repository (no Postgres required).
+<<<<<<< HEAD
 >>>>>>> c9ce4ed (added prisma for orm and db migrations...)
+=======
+
+## Agent guidance
+
+Repository conventions for coding agents are defined in [`AGENTS.md`](./AGENTS.md).
+`CLAUDE.md` delegates to the same instructions so all agents follow one source of
+truth.
+>>>>>>> b19aa78 (authentication done)

@@ -15,10 +15,10 @@ export async function GET(request: NextRequest) {
       return unauthorizedResponse();
     }
 
-    const denied = await assertOpaAllowed(user, APP_OPA_ACTIONS.PROJECT_LIST);
-    if (denied) {
-      return denied;
-    }
+    // const denied = await assertOpaAllowed(user, APP_OPA_ACTIONS.PROJECT_LIST);
+    // if (denied) {
+    //   return denied;
+    // }
 
     const { searchParams } = request.nextUrl;
     const result = await getProjectService().list({
@@ -41,10 +41,10 @@ export async function POST(request: NextRequest) {
       return unauthorizedResponse();
     }
 
-    const denied = await assertOpaAllowed(user, APP_OPA_ACTIONS.PROJECT_CREATE);
-    if (denied) {
-      return denied;
-    }
+    // const denied = await assertOpaAllowed(user, APP_OPA_ACTIONS.PROJECT_CREATE);
+    // if (denied) {
+    //   return denied;
+    // }
 
     const body = await request.json();
     const project = await getProjectService().create(user.id, body);

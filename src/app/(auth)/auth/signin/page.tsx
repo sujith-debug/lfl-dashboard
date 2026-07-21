@@ -1,16 +1,47 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 
-export default function SignInPage() {
+function SignInRedirect() {
+  const { status } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/panel";
+
   useEffect(() => {
-    void signIn("keycloak");
-  }, []);
+    if (status === "authenticated") {
+      router.replace(callbackUrl);
+      return;
+    }
+
+    if (status === "unauthenticated") {
+      void signIn("keycloak", { callbackUrl });
+    }
+  }, [status, callbackUrl, router]);
 
   return (
     <main style={{ padding: "2rem", fontFamily: "system-ui" }}>
-      <p>Redirecting to Keycloak…</p>
+      <p>
+        {status === "authenticated"
+          ? "Signed in — redirecting…"
+          : "Redirecting to Keycloak…"}
+      </p>
     </main>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <main style={{ padding: "2rem", fontFamily: "system-ui" }}>
+          <p>Loading…</p>
+        </main>
+      }
+    >
+      <SignInRedirect />
+    </Suspense>
   );
 }
