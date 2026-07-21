@@ -1,6 +1,6 @@
 /**
  * Type definitions for NextAuth.js (Keycloak session shape).
- * Kept in the app so TypeScript always picks them up.
+ * Package also ships `@foundry/auth-next/types` for the same augmentations.
  */
 
 import "next-auth";

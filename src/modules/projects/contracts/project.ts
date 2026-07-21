@@ -38,12 +38,19 @@ export const UpdateProjectInputSchema = z.object({
 });
 export type UpdateProjectInput = z.infer<typeof UpdateProjectInputSchema>;
 
+export const ArchiveProjectInputSchema = z.object({
+  version: z.number().int().positive(),
+});
+
+export type ArchiveProjectInput = z.infer<typeof ArchiveProjectInputSchema>;
+
 export const ListProjectsQuerySchema = z.object({
   page: z.coerce.number().int().positive().optional(),
   pageSize: z.coerce.number().int().positive().max(100).optional(),
   status: ProjectStatusSchema.optional(),
   ownerId: z.string().optional(),
 });
+
 export type ListProjectsQuery = z.infer<typeof ListProjectsQuerySchema>;
 
 export const PaginationMetaSchema = z.object({

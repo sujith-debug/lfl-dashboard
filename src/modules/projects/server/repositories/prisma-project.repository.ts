@@ -1,8 +1,8 @@
 import "server-only";
 
 import { instrumentObject } from "@foundry/logger";
+import { mapPrismaError } from "@foundry/prisma";
 import { prisma } from "@/lib/db/prisma";
-import { mapPrismaError } from "@/lib/db/errors";
 import {
   projectSelect,
   type CreateProjectData,

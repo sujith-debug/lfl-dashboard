@@ -10,7 +10,10 @@ export const { authOptions, authHandler } = createAuthHandler();
 export {
   getSession,
   getUserFromSession,
+  getCurrentUser,
+  requireUser,
   getUserFromRequest,
   unauthorizedResponse,
   forbiddenResponse,
+  sessionToKeycloakUser,
 } from "@foundry/auth-next";

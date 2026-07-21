@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { checkDatabaseHealth } from "@/lib/db";
+import { checkDatabaseHealth, prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 /** Readiness — app can serve traffic (DB reachable). */
 export async function GET() {
-  const db = await checkDatabaseHealth();
+  const db = await checkDatabaseHealth(prisma);
   if (!db.ok) {
     return NextResponse.json(
       { status: "not_ready", checks: { database: db } },

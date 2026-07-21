@@ -3,6 +3,7 @@ export type {
   ProjectStatusDto,
   CreateProjectInput,
   UpdateProjectInput,
+  ArchiveProjectInput,
   ListProjectsQuery,
   ProjectListDto,
 } from "./project";
@@ -11,6 +12,7 @@ export {
   ProjectStatusSchema,
   CreateProjectInputSchema,
   UpdateProjectInputSchema,
+  ArchiveProjectInputSchema,
   ListProjectsQuerySchema,
   ProjectListDtoSchema,
   PaginationMetaSchema,

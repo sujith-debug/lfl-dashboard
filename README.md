@@ -25,20 +25,21 @@ npm run db:seed          # optional
 npm run dev
 ```
 
-## Architecture (feature-first)
+## Architecture (module-first)
 
 ```
 src/
   app/                    # Next.js App Router (route groups + thin API)
     (public)/ (auth)/ (app)/
     api/v1/…              # auth + OPA + DTO + service only
-  features/<name>/
+  modules/<name>/
     contracts/            # browser-safe DTOs + zod (safe to import in client)
     components/ hooks/
     server/               # import "server-only"
       models/ repositories/ services/ container.ts
   lib/
-    db/ auth/ authorization/ http/ validation/ observability/
+    db/          # thin prisma singleton re-export
+    auth/ authorization/ http/ validation/
 prisma/
   schema.prisma migrations/ seed.ts
 ```
@@ -54,7 +55,7 @@ prisma/
 
 Do **not** split into separate `frontend/` and `backend/` trees.
 
-### Project feature (reference vertical slice)
+### Project module (reference vertical slice)
 
 - Model: `Project` (UUID, slug, status, optimistic `version`)
 - API: `GET/POST /api/v1/projects`, `GET/PATCH/DELETE /api/v1/projects/:id`
@@ -88,10 +89,13 @@ postgresql://USER:PASSWORD@HOST:5432/DBNAME?schema=public&sslmode=require
 | Concern | Package | App usage |
 |---------|---------|-----------|
 | Auth (Keycloak + NextAuth) | `@foundry/auth-next` | `src/lib/auth`, `[...nextauth]` route |
-| AuthZ (OPA) | `@foundry/opa-client` | middleware + API routes |
-| HTTP client | `@foundry/api-client` | services / server code |
+| AuthZ (OPA) | `@foundry/opa-client` (+ `/edge`) | middleware + API routes |
+| Errors / pagination / Zod parse | `@foundry/api-core` | services + routes |
+| HTTP JSON helpers | `@foundry/http-next` | API routes |
+| Prisma runtime helpers | `@foundry/prisma` | `src/lib/db`, repositories |
+| HTTP client | `@foundry/api-client` | outbound HTTP |
 | Logging / tracing | `@foundry/logger` | instrument repos/services |
-| ORM / SQL | **app-owned Prisma** | `prisma/`, `src/lib/db`, features |
+| Product tables / migrations | **app-owned Prisma** | `prisma/`, `modules/*/server` |
 
 ## Customizing for a new app
 

@@ -1,6 +1,6 @@
 import { authOptions, getUserFromSession } from "@/lib/auth";
-import { getProjectService } from "@/features/projects/server/container";
-import { ProjectsPanel } from "@/features/projects/components/ProjectsPanel";
+import { getProjectService } from "@/modules/projects/server/container";
+import { ProjectsPanel } from "@/modules/projects/components/ProjectsPanel";
 import { PanelClientHeader } from "./PanelClientHeader";
 
 /**

@@ -1,8 +1,8 @@
 "use client";
 
-import { CreateProjectForm } from "@/features/projects/components/CreateProjectForm";
-import { ProjectList } from "@/features/projects/components/ProjectList";
-import { useProjects } from "@/features/projects/hooks/useProjects";
+import { CreateProjectForm } from "@/modules/projects/components/CreateProjectForm";
+import { ProjectList } from "@/modules/projects/components/ProjectList";
+import { useProjects } from "@/modules/projects/hooks/useProjects";
 
 /**
  * Client island: mutates via /api/v1/projects.

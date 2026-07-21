@@ -3,9 +3,9 @@ import {
   getUserFromRequest,
   unauthorizedResponse,
   forbiddenResponse,
-} from "@foundry/auth-next";
+  authOptions,
+} from "@/lib/auth";
 import { getOpaClient, OPA_ACTIONS } from "@foundry/opa-client";
-import { authOptions } from "@/lib/auth";
 
 /**
  * Example protected API: session + OPA gate.

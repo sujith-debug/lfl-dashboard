@@ -6,7 +6,7 @@ import {
 } from "@/lib/auth";
 import { APP_OPA_ACTIONS, assertOpaAllowed } from "@/lib/authorization";
 import { jsonCreated, jsonError, jsonOk } from "@/lib/http";
-import { getProjectService } from "@/features/projects/server/container";
+import { getProjectService } from "@/modules/projects/server/container";
 
 export async function GET(request: NextRequest) {
   try {

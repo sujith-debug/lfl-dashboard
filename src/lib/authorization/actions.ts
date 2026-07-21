@@ -1,7 +1,7 @@
 import "server-only";
 
 /**
- * App-owned OPA action strings. Extend as features grow.
+ * App-owned OPA action strings. Extend as modules grow.
  * Built-in panel action remains available from @foundry/opa-client.
  */
 export const APP_OPA_ACTIONS = {
