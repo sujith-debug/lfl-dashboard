@@ -1,5 +1,5 @@
 {
-  "family": "dev-APP_NAME-service",
+  "family": "dev-<APP_NAME>-service",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "1024",
@@ -8,15 +8,21 @@
     "cpuArchitecture": "ARM64",
     "operatingSystemFamily": "LINUX"
   },
-  "executionRoleArn": "arn:aws:iam::AWS_ACCOUNT_ID:role/ECSTaskExecution",
-  "taskRoleArn": "arn:aws:iam::AWS_ACCOUNT_ID:role/EC2Role",
+  "executionRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/ECSTaskExecution",
+  "taskRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/EC2Role",
   "containerDefinitions": [
     {
-      "name": "APP_NAME",
-      "image": "AWS_ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/dev/APP_NAME:latest",
+      "name": "<APP_NAME>",
+      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/dev/<APP_NAME>:latest",
       "cpu": 512,
       "memory": 1024,
       "essential": true,
+      "dependsOn": [
+        {
+          "containerName": "opa-container",
+          "condition": "START"
+        }
+      ],
       "portMappings": [
         {
           "containerPort": 3000,
@@ -24,24 +30,62 @@
           "protocol": "tcp"
         }
       ],
-      "environment": [],
+      "environment": [
+        { "name": "OPA_URL", "value": "http://localhost:8181/v1/data/permission/OPA_PACKAGE/allow" },
+        { "name": "OPA_ACCOUNT", "value": "<APP_NAME>" }
+      ],
       "secrets": [
-        { "name": "KEYCLOAK_URL", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/KEYCLOAK_URL" },
-        { "name": "KEYCLOAK_REALM", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/KEYCLOAK_REALM" },
-        { "name": "KEYCLOAK_CLIENT_ID", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/KEYCLOAK_CLIENT_ID" },
-        { "name": "KEYCLOAK_CLIENT_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/KEYCLOAK_CLIENT_SECRET" },
-        { "name": "OPA_URL", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/OPA_URL" },
-        { "name": "OPA_ACCOUNT", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/OPA_ACCOUNT" },
-        { "name": "NEXTAUTH_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/NEXTAUTH_SECRET" },
-        { "name": "NEXTAUTH_URL", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/NEXTAUTH_URL" },
-        { "name": "DATABASE_URL", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/DATABASE_URL" }
+        { "name": "KEYCLOAK_URL", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/<APP_NAME>/build/KEYCLOAK_URL" },
+        { "name": "KEYCLOAK_REALM", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/<APP_NAME>/build/KEYCLOAK_REALM" },
+        { "name": "KEYCLOAK_CLIENT_ID", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/<APP_NAME>/build/KEYCLOAK_CLIENT_ID" },
+        { "name": "KEYCLOAK_CLIENT_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/<APP_NAME>/build/KEYCLOAK_CLIENT_SECRET" },
+        { "name": "NEXTAUTH_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/<APP_NAME>/build/NEXTAUTH_SECRET" },
+        { "name": "NEXTAUTH_URL", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/<APP_NAME>/build/NEXTAUTH_URL" },
+        { "name": "DATABASE_URL", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/<APP_NAME>/build/DATABASE_URL" }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/dev/dev-APP_NAME-service",
+          "awslogs-group": "/ecs/dev/dev-<APP_NAME>-service",
           "awslogs-region": "ap-south-1",
           "awslogs-stream-prefix": "ecs"
+        }
+      }
+    },
+    {
+      "name": "opa-container",
+      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/dev/opa:latest",
+      "cpu": 256,
+      "memory": 512,
+      "essential": false,
+      "portMappings": [
+        {
+          "containerPort": 8181,
+          "hostPort": 8181,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "SERVICE_NAME", "value": "opa-<APP_NAME>" },
+        { "name": "ENV", "value": "dev" },
+        { "name": "AWS_REGION", "value": "ap-south-1" }
+      ],
+      "secrets": [
+        { "name": "AWS_ACCESS_KEY_ID", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/opa-service/aws/access_key_id" },
+        { "name": "AWS_SECRET_ACCESS_KEY", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/opa-service/aws/secret_access_key" }
+      ],
+      "command": [
+        "run",
+        "--server",
+        "--addr=0.0.0.0:8181",
+        "--config-file=/config/opa-config.yaml"
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/dev/dev-<APP_NAME>-service",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "opa"
         }
       }
     }

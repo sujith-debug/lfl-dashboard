@@ -60,6 +60,37 @@ Copy `.env.example` to `.env`. The main settings are:
 
 Never commit `.env` or pass `DATABASE_URL` as a Docker build argument.
 
+### OPA sidecar
+
+`docker compose up -d` starts PostgreSQL and a local OPA server on port `8181`.
+The local policy at `opa/policies/app.rego` permits authenticated users to use
+the reference project module. It is a development policy, not a production
+authorization model.
+
+ECS runs `opa-container` in the same Fargate task as the app. Containers in an
+`awsvpc` task share the network namespace, so the app calls:
+
+```text
+http://localhost:8181/v1/data/permission/OPA_PACKAGE/allow
+```
+
+The production sidecar follows the central OPA repository: it loads
+`/config/opa-config.yaml`, pulls `bundles/bundle.tar.gz` from the environment's
+S3 permissions bucket, and fails authorization closed when unavailable.
+Before deployment:
+
+1. Replace `OPA_PACKAGE` in both task definitions with a Rego-safe package
+   segment (for example, `order_service`), then add
+   `package permission.order_service` and all application actions to the
+   central OPA bundle.
+2. Ensure `dev/opa:latest` and `prod/opa:latest` are multi-architecture images
+   because this task runs on ARM64.
+3. Make the OPA S3 credentials available at
+   `/{env}/opa-service/aws/access_key_id` and `.../secret_access_key`, or update
+   the OPA config/task role to use ECS task-role credentials.
+4. Use `/api/health/ready` for target readiness; it checks PostgreSQL and OPA
+   bundle health.
+
 ### Keycloak client settings (local)
 
 For client `foundry-template` in realm `dev`, set:
@@ -170,13 +201,15 @@ postgresql://USER:PASSWORD@HOST:5432/DBNAME?schema=public&sslmode=require
    - `.github/workflows/prod-release.yml`
    - `deploy/dev-task-definition.json`
    - `deploy/prod-task-definition.json`
-2. Put secrets in SSM under `/{env}/{APP_NAME}/build/` including **`DATABASE_URL`**
+2. Put app secrets in SSM under `/{env}/{APP_NAME}/build/`, including **`DATABASE_URL`**
 3. Ensure the ECS task security group can reach RDS on 5432
 4. Generate secrets array if needed:
    ```bash
    ./scripts/env-to-ecs-secrets.sh dev APP_NAME AWS_ACCOUNT_ID
    ```
-5. Add OPA Rego actions used by the app (`project_list`, `project_create`, …)
+5. Replace `OPA_PACKAGE` in both task definitions and add that package plus the
+   app actions (`access_panel`, `project_list`, `project_create`, …) to the
+   central OPA bundle
 
 ## Deploy pattern
 
@@ -191,7 +224,8 @@ postgresql://USER:PASSWORD@HOST:5432/DBNAME?schema=public&sslmode=require
 2. Image build runs `prisma generate` (ARM64 engine via `linux-arm64-openssl-3.0.x`)
 3. Image pushed to ECR (schema + migrations included)
 4. **One-off ECS task** runs `npx prisma migrate deploy` (uses runtime `DATABASE_URL` from task secrets)
-5. ECS service updated from task definition JSON
+5. ECS starts the OPA sidecar, which polls the environment S3 bundle
+6. ECS service is updated from the task definition JSON
 
 ## Verification
 

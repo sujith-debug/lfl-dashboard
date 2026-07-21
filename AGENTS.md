@@ -10,7 +10,6 @@ module-first and keep shared platform behavior in the `@foundry/*` packages.
 - Read `README.md` and the nearest module files before editing.
 - Do not edit generated output in `.next/`, `node_modules/`, or
   `node_modules/.prisma/`.
-- Never read, log, or commit secrets from `.env`.
 - Do not modify sibling projects such as `terminus`.
 
 ## Architecture
@@ -53,6 +52,8 @@ Change a shared package only when behavior is reusable across applications.
 ## Security and observability
 
 - Protect server pages and APIs with NextAuth and OPA as appropriate.
+- Call the co-located OPA sidecar through `localhost:8181`; production policies
+  belong in the central OPA bundle, not in application code.
 - Never expose server modules, Prisma, credentials, or tokens to client bundles.
 - Use structured logging; do not use `console.log`.
 - Instrument repositories/services through Foundry instrumentation helpers.

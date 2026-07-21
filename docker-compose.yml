@@ -18,5 +18,21 @@ services:
       retries: 10
       start_period: 5s
 
+  opa:
+    image: openpolicyagent/opa:latest
+    container_name: foundry-opa
+    restart: unless-stopped
+    command:
+      - run
+      - --server
+      - --addr=0.0.0.0:8181
+      - --watch
+      - --log-level=debug
+      - /policies
+    ports:
+      - "8181:8181"
+    volumes:
+      - ./opa/policies:/policies:ro
+
 volumes:
   foundry_pg_data:
