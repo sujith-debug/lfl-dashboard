@@ -1,6 +1,11 @@
-# Multi-stage Dockerfile for Foundry Next.js apps
-FROM node:20-alpine AS builder
+# Multi-stage Dockerfile for Foundry Next.js apps (ARM64 / Fargate)
+# Uses Debian (glibc) so Prisma linux-arm64-openssl-3.0.x engines work.
+# DATABASE_URL is NEVER a build-arg — inject at runtime via ECS task secrets.
+
+FROM node:20-bookworm-slim AS builder
 WORKDIR /app
+
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 ARG KEYCLOAK_URL
 ARG KEYCLOAK_REALM
@@ -27,17 +32,28 @@ ENV NEXT_PUBLIC_KEYCLOAK_REALM=${NEXT_PUBLIC_KEYCLOAK_REALM}
 ENV NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}
 
 COPY package.json package-lock.json* ./
+COPY prisma ./prisma
 RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+RUN npx prisma generate
+
 COPY . .
 RUN npm run build
 
-FROM node:20-alpine AS runner
+FROM node:20-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.js ./
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/prisma ./prisma
+
 EXPOSE 3000
+
+# Default: app server. Override for one-off migrate:
+#   npx prisma migrate deploy
 CMD ["npm", "run", "start"]

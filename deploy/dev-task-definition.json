@@ -33,7 +33,8 @@
         { "name": "OPA_URL", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/OPA_URL" },
         { "name": "OPA_ACCOUNT", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/OPA_ACCOUNT" },
         { "name": "NEXTAUTH_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/NEXTAUTH_SECRET" },
-        { "name": "NEXTAUTH_URL", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/NEXTAUTH_URL" }
+        { "name": "NEXTAUTH_URL", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/NEXTAUTH_URL" },
+        { "name": "DATABASE_URL", "valueFrom": "arn:aws:ssm:ap-south-1:AWS_ACCOUNT_ID:parameter/dev/APP_NAME/build/DATABASE_URL" }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",

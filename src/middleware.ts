@@ -1,11 +1,11 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 import { logger } from "@foundry/logger";
+import { OPA_ACTIONS } from "@foundry/opa-client/types";
 import {
-  OPA_ACTIONS,
   buildOpaInput,
   buildOpaSubject,
-} from "@foundry/opa-client";
+} from "@foundry/opa-client/helpers";
 
 const OPA_ACCOUNT =
   process.env.OPA_ACCOUNT || process.env.KEYCLOAK_CLIENT_ID || "app";
@@ -81,5 +81,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/panel/:path*", "/api/me"],
+  matcher: ["/panel/:path*", "/api/me", "/api/v1/:path*"],
 };

@@ -6,3 +6,11 @@
 import { createAuthHandler } from "@foundry/auth-next";
 
 export const { authOptions, authHandler } = createAuthHandler();
+
+export {
+  getSession,
+  getUserFromSession,
+  getUserFromRequest,
+  unauthorizedResponse,
+  forbiddenResponse,
+} from "@foundry/auth-next";

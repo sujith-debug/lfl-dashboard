@@ -1,15 +1,16 @@
-"use client";
+import { authOptions, getUserFromSession } from "@/lib/auth";
+import { getProjectService } from "@/features/projects/server/container";
+import { ProjectsPanel } from "@/features/projects/components/ProjectsPanel";
+import { PanelClientHeader } from "./PanelClientHeader";
 
-import { useSession, signOut } from "next-auth/react";
+/**
+ * Server Component: loads session + projects via services (no HTTP hop).
+ * Interactive create/list refresh is delegated to a client island.
+ */
+export default async function PanelPage() {
+  const user = await getUserFromSession(authOptions);
 
-export default function PanelPage() {
-  const { data: session, status } = useSession();
-
-  if (status === "loading") {
-    return <main style={{ padding: "2rem" }}>Loading…</main>;
-  }
-
-  if (!session) {
+  if (!user) {
     return (
       <main style={{ padding: "2rem", fontFamily: "system-ui" }}>
         <p>Not signed in.</p>
@@ -17,15 +18,21 @@ export default function PanelPage() {
     );
   }
 
+  let initialCount = 0;
+  try {
+    const listed = await getProjectService().list({ pageSize: 1 });
+    initialCount = listed.pagination.total;
+  } catch {
+    initialCount = -1;
+  }
+
   return (
     <main style={{ padding: "2rem", fontFamily: "system-ui" }}>
-      <h1>Panel</h1>
-      <p>
-        Signed in as <strong>{session.user.username}</strong>
-      </p>
-      <button type="button" onClick={() => signOut()}>
-        Sign out
-      </button>
+      <PanelClientHeader
+        username={user.username}
+        projectCount={initialCount}
+      />
+      <ProjectsPanel />
     </main>
   );
 }
