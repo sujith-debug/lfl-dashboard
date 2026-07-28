@@ -2,15 +2,14 @@
 # Uses Debian (glibc) so Prisma linux-arm64-openssl-3.0.x engines work.
 # DATABASE_URL is NEVER a build-arg — inject at runtime via ECS task secrets.
 #
-# @foundry/* packages are installed from GitHub Packages. Pass a PAT with
-# read:packages as NODE_AUTH_TOKEN (build-arg / BuildKit secret).
+# @foundry/* comes from GitHub Release .tgz files in .foundry-release/
+# (run `npm run foundry:release` before build, or download assets in CI).
 
 FROM node:20-bookworm-slim AS builder
 WORKDIR /app
 
 RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
-ARG NODE_AUTH_TOKEN
 ARG KEYCLOAK_URL
 ARG KEYCLOAK_REALM
 ARG KEYCLOAK_CLIENT_ID
@@ -23,7 +22,6 @@ ARG NEXT_PUBLIC_KEYCLOAK_URL
 ARG NEXT_PUBLIC_KEYCLOAK_REALM
 ARG NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
 
-ENV NODE_AUTH_TOKEN=${NODE_AUTH_TOKEN}
 ENV KEYCLOAK_URL=${KEYCLOAK_URL}
 ENV KEYCLOAK_REALM=${KEYCLOAK_REALM}
 ENV KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
@@ -37,10 +35,10 @@ ENV NEXT_PUBLIC_KEYCLOAK_REALM=${NEXT_PUBLIC_KEYCLOAK_REALM}
 ENV NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}
 
 COPY package.json package-lock.json* .npmrc ./
+COPY .foundry-release ./.foundry-release
 COPY prisma ./prisma
 RUN npm ci --legacy-peer-deps
 RUN npx prisma generate
-RUN rm -f .npmrc
 
 COPY . .
 RUN npm run build
