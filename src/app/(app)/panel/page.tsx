@@ -1,6 +1,7 @@
 import { authOptions, getUserFromSession } from "@/lib/auth";
 import { getProjectService } from "@/modules/projects/server/container";
 import { ProjectsPanel } from "@/modules/projects/components/ProjectsPanel";
+import { AnalyticsPanel } from "@/modules/analytics/components/AnalyticsPanel";
 import { AppShell } from "@/components/layout/AppShell";
 import { PanelClientHeader } from "./PanelClientHeader";
 
@@ -37,6 +38,7 @@ export default async function PanelPage() {
           projectCount={initialCount}
         />
         <ProjectsPanel />
+        <AnalyticsPanel />
       </main>
     </AppShell>
   );

@@ -30,6 +30,7 @@
     "@foundry/api-client": "file:../../foundry-npm/packages/api-client",
     "@foundry/api-core": "file:../../foundry-npm/packages/api-core",
     "@foundry/auth-next": "file:../../foundry-npm/packages/auth-next",
+    "@foundry/bigquery": "file:../../foundry-npm/packages/bigquery",
     "@foundry/http-next": "file:../../foundry-npm/packages/http-next",
     "@foundry/logger": "file:../../foundry-npm/packages/logger",
     "@foundry/opa-client": "file:../../foundry-npm/packages/opa-client",
