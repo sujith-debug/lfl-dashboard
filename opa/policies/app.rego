@@ -13,7 +13,6 @@ supported_actions := {
 	"project_create",
 	"project_update",
 	"project_archive",
-	"analytics_read",
 	"analytics_query",
 }
 

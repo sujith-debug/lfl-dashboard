@@ -1,11 +1,6 @@
 import "server-only";
 
-export type AnalyticsDatasetRecord = {
-  id: string;
-  location?: string;
-};
-
-export type AnalyticsPreviewRecord = {
+export type AnalyticsQueryRecord = {
   table: string;
   jobId?: string;
   totalRows: number;

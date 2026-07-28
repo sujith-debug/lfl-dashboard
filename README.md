@@ -89,7 +89,6 @@ Copy `.env.example` to `.env`. The main settings are:
 - `DATABASE_URL`: PostgreSQL connection URL using username/password.
 - `BIGQUERY_DEFAULT_PROJECT` / `BIGQUERY_LOCATION` / `BIGQUERY_SERVICE_ACCOUNT_JSON`: optional BigQuery client config (inline service-account JSON; prefer single-quoted JSON in `.env`).
 - `BQ_ALLOWED_DATASETS_TABLES`: optional comma-separated table allowlist (`dataset.table`, `dataset.*`).
-- `BIGQUERY_SAMPLE_TABLE`: optional `dataset.table` for the analytics module preview query.
 - `LOG_LEVEL`: Pino log level.
 - `OTEL_*`: OpenTelemetry service name and OTLP trace exporter endpoint.
 
@@ -191,9 +190,9 @@ call a service, and format the response.
 ### Analytics module (BigQuery reference slice)
 
 - Package: `@foundry/bigquery` via `src/lib/bigquery`
-- Module: `src/modules/analytics` (list datasets + parameterized table preview)
-- API: `GET /api/v1/analytics`, `GET /api/v1/analytics/preview?limit=5`
-- Config: `BIGQUERY_DEFAULT_PROJECT`, `BIGQUERY_SERVICE_ACCOUNT_JSON`, `BQ_ALLOWED_DATASETS_TABLES`, optional `BIGQUERY_SAMPLE_TABLE`
+- Module: `src/modules/analytics` (UI table input → parameterized query → row display)
+- API: `GET /api/v1/analytics?table=dataset.table&limit=10`
+- Config: `BIGQUERY_DEFAULT_PROJECT`, `BIGQUERY_SERVICE_ACCOUNT_JSON`, optional `BQ_ALLOWED_DATASETS_TABLES`
 
 ## Database contract (RDS)
 

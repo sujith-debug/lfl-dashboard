@@ -1,13 +1,9 @@
 export type {
-  AnalyticsDatasetDto,
-  AnalyticsPreviewQuery,
-  AnalyticsPreviewDto,
-  AnalyticsOverviewDto,
+  AnalyticsQueryInput,
+  AnalyticsQueryResultDto,
 } from "./analytics";
 export {
   BigQueryTableIdSchema,
-  AnalyticsDatasetDtoSchema,
-  AnalyticsPreviewQuerySchema,
-  AnalyticsPreviewDtoSchema,
-  AnalyticsOverviewDtoSchema,
+  AnalyticsQueryInputSchema,
+  AnalyticsQueryResultDtoSchema,
 } from "./analytics";

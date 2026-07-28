@@ -1,15 +1,7 @@
 import "server-only";
 
-import type {
-  AnalyticsDatasetRecord,
-  AnalyticsPreviewRecord,
-} from "../models";
+import type { AnalyticsQueryRecord } from "../models";
 
 export interface AnalyticsRepository {
-  getProjectId(): string | undefined;
-  listDatasets(maxResults?: number): Promise<AnalyticsDatasetRecord[]>;
-  previewTable(
-    table: string,
-    limit: number
-  ): Promise<AnalyticsPreviewRecord>;
+  queryTable(table: string, limit: number): Promise<AnalyticsQueryRecord>;
 }

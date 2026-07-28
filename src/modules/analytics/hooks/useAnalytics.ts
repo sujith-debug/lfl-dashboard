@@ -1,10 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import type {
-  AnalyticsOverviewDto,
-  AnalyticsPreviewDto,
-} from "../contracts";
+import { useCallback, useState } from "react";
+import type { AnalyticsQueryResultDto } from "../contracts";
 
 async function readError(response: Response): Promise<string> {
   try {
@@ -15,60 +12,38 @@ async function readError(response: Response): Promise<string> {
   }
 }
 
-export function useAnalytics() {
-  const [overview, setOverview] = useState<AnalyticsOverviewDto | null>(null);
-  const [preview, setPreview] = useState<AnalyticsPreviewDto | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [previewLoading, setPreviewLoading] = useState(false);
+export function useAnalyticsQuery() {
+  const [result, setResult] = useState<AnalyticsQueryResultDto | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
+  const runQuery = useCallback(async (table: string, limit = 10) => {
+    const trimmed = table.trim();
+    if (!trimmed) {
+      setError("Enter a table id like dataset.table");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/v1/analytics");
+      const params = new URLSearchParams({
+        table: trimmed,
+        limit: String(limit),
+      });
+      const response = await fetch(`/api/v1/analytics?${params}`);
       if (!response.ok) {
         throw new Error(await readError(response));
       }
-      setOverview((await response.json()) as AnalyticsOverviewDto);
+      setResult((await response.json()) as AnalyticsQueryResultDto);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to load analytics"
+        err instanceof Error ? err.message : "Failed to run BigQuery query"
       );
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const loadPreview = useCallback(async () => {
-    setPreviewLoading(true);
-    setError(null);
-    try {
-      const response = await fetch("/api/v1/analytics/preview?limit=5");
-      if (!response.ok) {
-        throw new Error(await readError(response));
-      }
-      setPreview((await response.json()) as AnalyticsPreviewDto);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to preview BigQuery table"
-      );
-    } finally {
-      setPreviewLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
-
-  return {
-    overview,
-    preview,
-    loading,
-    previewLoading,
-    error,
-    refresh,
-    loadPreview,
-  };
+  return { result, loading, error, runQuery };
 }

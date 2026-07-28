@@ -2,81 +2,43 @@ import assert from "node:assert/strict";
 import { describe, it, beforeEach, afterEach } from "node:test";
 import { AnalyticsService } from "./analytics.service";
 import type { AnalyticsRepository } from "../repositories";
-import type {
-  AnalyticsDatasetRecord,
-  AnalyticsPreviewRecord,
-} from "../models";
+import type { AnalyticsQueryRecord } from "../models";
 
 class FakeAnalyticsRepository implements AnalyticsRepository {
-  projectId = "demo-project";
-  datasets: AnalyticsDatasetRecord[] = [
-    { id: "analytics", location: "US" },
-    { id: "raw", location: "US" },
-  ];
-  preview: AnalyticsPreviewRecord = {
-    table: "analytics.events",
-    jobId: "job-1",
-    totalRows: 1,
-    rows: [{ event: "signup" }],
-  };
-
-  getProjectId() {
-    return this.projectId;
-  }
-
-  async listDatasets() {
-    return this.datasets;
-  }
-
-  async previewTable(table: string, limit: number) {
+  async queryTable(table: string, limit: number): Promise<AnalyticsQueryRecord> {
     return {
-      ...this.preview,
       table,
-      rows: this.preview.rows.slice(0, limit),
-      totalRows: Math.min(this.preview.totalRows, limit),
+      jobId: "job-1",
+      totalRows: 1,
+      rows: [{ event: "signup" }].slice(0, limit),
     };
   }
 }
 
 describe("AnalyticsService", () => {
-  const previousProject = process.env.BIGQUERY_PROJECT_ID;
-  const previousTable = process.env.BIGQUERY_SAMPLE_TABLE;
+  const previousAllow = process.env.BQ_ALLOWED_DATASETS_TABLES;
 
   beforeEach(() => {
-    process.env.BIGQUERY_PROJECT_ID = "demo-project";
-    process.env.BIGQUERY_SAMPLE_TABLE = "analytics.events";
+    delete process.env.BQ_ALLOWED_DATASETS_TABLES;
   });
 
   afterEach(() => {
-    if (previousProject === undefined) {
-      delete process.env.BIGQUERY_PROJECT_ID;
+    if (previousAllow === undefined) {
+      delete process.env.BQ_ALLOWED_DATASETS_TABLES;
     } else {
-      process.env.BIGQUERY_PROJECT_ID = previousProject;
-    }
-    if (previousTable === undefined) {
-      delete process.env.BIGQUERY_SAMPLE_TABLE;
-    } else {
-      process.env.BIGQUERY_SAMPLE_TABLE = previousTable;
+      process.env.BQ_ALLOWED_DATASETS_TABLES = previousAllow;
     }
   });
 
-  it("returns an overview of datasets", async () => {
+  it("runs a query for the requested table and returns rows", async () => {
     const service = new AnalyticsService(new FakeAnalyticsRepository());
-    const overview = await service.getOverview();
+    const result = await service.runQuery({
+      table: "analytics.events",
+      limit: 5,
+    });
 
-    assert.equal(overview.configured, true);
-    assert.equal(overview.projectId, "demo-project");
-    assert.equal(overview.datasets.length, 2);
-    assert.equal(overview.sampleTable, "analytics.events");
-    assert.ok(Array.isArray(overview.allowedTables));
-  });
-
-  it("previews the configured sample table", async () => {
-    const service = new AnalyticsService(new FakeAnalyticsRepository());
-    const preview = await service.previewSample({ limit: 5 });
-
-    assert.equal(preview.table, "analytics.events");
-    assert.equal(preview.rows[0]?.event, "signup");
-    assert.equal(preview.jobId, "job-1");
+    assert.equal(result.table, "analytics.events");
+    assert.equal(result.rows[0]?.event, "signup");
+    assert.equal(result.jobId, "job-1");
   });
 });
