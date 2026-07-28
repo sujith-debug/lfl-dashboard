@@ -13,6 +13,8 @@ supported_actions := {
 	"project_create",
 	"project_update",
 	"project_archive",
+	"analytics_read",
+	"analytics_query",
 }
 
 # The template allows authenticated users to exercise its reference module.

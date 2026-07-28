@@ -34,6 +34,7 @@ Use the existing package instead of duplicating platform code:
 - `@foundry/api-core` for errors, pagination, and validation.
 - `@foundry/http-next` for API response envelopes.
 - `@foundry/prisma` for Prisma runtime helpers.
+- `@foundry/bigquery` for BigQuery client and parameterized queries.
 - `@foundry/logger` for structured logs and tracing instrumentation.
 - `@foundry/api-client` for outbound HTTP.
 
@@ -43,6 +44,8 @@ Change a shared package only when behavior is reusable across applications.
 
 - The application owns `prisma/schema.prisma` and migrations.
 - Connect with `DATABASE_URL` username/password authentication.
+- Use `@foundry/bigquery` via `src/lib/bigquery` for analytics queries; keep
+  table identifiers validated and SQL parameterized.
 - Map Prisma records to domain models in repositories and DTOs in mappers.
 - Use repository interfaces in services so unit tests can inject fakes.
 - Validate all external input with contract schemas.

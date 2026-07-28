@@ -87,6 +87,9 @@ Copy `.env.example` to `.env`. The main settings are:
 - `NEXTAUTH_URL` and `NEXTAUTH_SECRET`: NextAuth URL and signing secret.
 - `OPA_URL` and `OPA_ACCOUNT`: OPA decision endpoint and application account.
 - `DATABASE_URL`: PostgreSQL connection URL using username/password.
+- `BIGQUERY_DEFAULT_PROJECT` / `BIGQUERY_LOCATION` / `BIGQUERY_SERVICE_ACCOUNT_JSON`: optional BigQuery client config (inline service-account JSON; prefer single-quoted JSON in `.env`).
+- `BQ_ALLOWED_DATASETS_TABLES`: optional comma-separated table allowlist (`dataset.table`, `dataset.*`).
+- `BIGQUERY_SAMPLE_TABLE`: optional `dataset.table` for the analytics module preview query.
 - `LOG_LEVEL`: Pino log level.
 - `OTEL_*`: OpenTelemetry service name and OTLP trace exporter endpoint.
 
@@ -96,8 +99,8 @@ Never commit `.env` or pass `DATABASE_URL` as a Docker build argument.
 
 `docker compose up -d` starts PostgreSQL and a local OPA server on port `8181`.
 The local policy at `opa/policies/app.rego` permits authenticated users to use
-the reference project module. It is a development policy, not a production
-authorization model.
+the reference project and analytics modules. It is a development policy, not a
+production authorization model.
 
 ECS runs `opa-container` in the same Fargate task as the app. Containers in an
 `awsvpc` task share the network namespace, so the app calls:
@@ -172,7 +175,7 @@ Each business capability belongs in `src/modules/<name>`:
 - `contracts/`: Zod schemas and browser-safe DTO types.
 - `components/` and `hooks/`: client-facing UI and API consumption.
 - `server/models/`: application domain types.
-- `server/repositories/`: persistence interfaces and Prisma implementations.
+- `server/repositories/`: persistence interfaces and Prisma / BigQuery implementations.
 - `server/services/`: use cases and domain orchestration.
 - `server/container.ts`: server-side dependency composition.
 
@@ -183,7 +186,14 @@ call a service, and format the response.
 
 - Model: `Project` (UUID, slug, status, optimistic `version`)
 - API: `GET/POST /api/v1/projects`, `GET/PATCH/DELETE /api/v1/projects/:id`
-- Health: `GET /api/health/live`, `GET /api/health/ready` (DB check)
+- Health: `GET /api/health/live`, `GET /api/health/ready` (DB + OPA; BigQuery when configured)
+
+### Analytics module (BigQuery reference slice)
+
+- Package: `@foundry/bigquery` via `src/lib/bigquery`
+- Module: `src/modules/analytics` (list datasets + parameterized table preview)
+- API: `GET /api/v1/analytics`, `GET /api/v1/analytics/preview?limit=5`
+- Config: `BIGQUERY_DEFAULT_PROJECT`, `BIGQUERY_SERVICE_ACCOUNT_JSON`, `BQ_ALLOWED_DATASETS_TABLES`, optional `BIGQUERY_SAMPLE_TABLE`
 
 ## Database contract (RDS)
 
@@ -222,6 +232,7 @@ postgresql://USER:PASSWORD@HOST:5432/DBNAME?schema=public&sslmode=require
 | Errors / pagination / Zod parse | `@foundry/api-core` | services + routes |
 | HTTP JSON helpers | `@foundry/http-next` | API routes |
 | Prisma runtime helpers | `@foundry/prisma` | `src/lib/db`, repositories |
+| BigQuery client / queries | `@foundry/bigquery` | `src/lib/bigquery`, `modules/analytics` |
 | HTTP client | `@foundry/api-client` | outbound HTTP |
 | Logging / tracing | `@foundry/logger` | instrument repos/services |
 | Product tables / migrations | **app-owned Prisma** | `prisma/`, `modules/*/server` |
