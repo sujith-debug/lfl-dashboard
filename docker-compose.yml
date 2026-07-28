@@ -1,35 +1,34 @@
 services:
-  # app:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     args:
-  #       NODE_AUTH_TOKEN: ${NODE_AUTH_TOKEN}
-  #       KEYCLOAK_URL: ${KEYCLOAK_URL}
-  #       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
-  #       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
-  #       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
-  #       OPA_URL: http://opa:8181/v1/data/permission/app/allow
-  #       OPA_ACCOUNT: ${OPA_ACCOUNT:-app}
-  #       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
-  #       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-  #       NEXT_PUBLIC_KEYCLOAK_URL: ${NEXT_PUBLIC_KEYCLOAK_URL}
-  #       NEXT_PUBLIC_KEYCLOAK_REALM: ${NEXT_PUBLIC_KEYCLOAK_REALM}
-  #       NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}
-  #   container_name: foundry-app
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3000:3000"
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     DATABASE_URL: postgresql://foundry:foundry@postgres:5432/foundry?schema=public
-  #     OPA_URL: http://opa:8181/v1/data/permission/app/allow
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     opa:
-  #       condition: service_started
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        KEYCLOAK_URL: ${KEYCLOAK_URL}
+        KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+        KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+        KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
+        OPA_URL: http://opa:8181/v1/data/permission/app/allow
+        OPA_ACCOUNT: ${OPA_ACCOUNT:-app}
+        NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+        NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+        NEXT_PUBLIC_KEYCLOAK_URL: ${NEXT_PUBLIC_KEYCLOAK_URL}
+        NEXT_PUBLIC_KEYCLOAK_REALM: ${NEXT_PUBLIC_KEYCLOAK_REALM}
+        NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}
+    container_name: foundry-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://foundry:foundry@postgres:5432/foundry?schema=public
+      OPA_URL: http://opa:8181/v1/data/permission/app/allow
+    depends_on:
+      postgres:
+        condition: service_healthy
+      opa:
+        condition: service_started
 
   postgres:
     image: postgres:16-alpine

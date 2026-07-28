@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-
-# Foundry Next.js template
-=======
 # Foundry Next.js Application Template
->>>>>>> b19aa78 (authentication done)
 
 A production-oriented full-stack Next.js template for Foundry teams. It provides
 Keycloak authentication, OPA authorization, PostgreSQL access through Prisma,
@@ -17,21 +12,26 @@ remain owned by the application.
 
 - Node.js 20 and npm
 - Docker with Docker Compose
+- GitHub CLI (`gh`) when installing versioned `@foundry/*` release tarballs
 - Access to Keycloak and OPA
 - PostgreSQL 14+ (the included Compose service is suitable for local development)
 
 ## Quick start
 
 ```bash
-# Auth for GitHub Packages (@foundry/* versioned releases)
-# Create a classic PAT with read:packages, then:
-export NODE_AUTH_TOKEN=<github_pat>
+# Optional: gh auth login   # needed for npm run foundry:release
 
 cp .env.example .env
 # Configure Keycloak, NextAuth, OPA, and DATABASE_URL.
 # Generate NEXTAUTH_SECRET with: openssl rand -base64 32
 
 docker compose up -d
+
+# Prefer local packages while developing next to foundry-npm:
+npm run foundry:local
+# Or install a tagged GitHub Release (no private npm registry):
+# npm run foundry:release
+
 npm install
 npm run db:generate
 npm run db:migrate:dev
@@ -41,9 +41,9 @@ npm run dev
 
 Open `http://localhost:3000`. The protected example is available at `/panel`.
 
-> `@foundry/*` packages are installed from **GitHub Packages** (versioned
-> releases of the separate `foundary-npm` repo). See `.npmrc`. Pin or bump
-> versions in `package.json` when the platform team publishes a new release.
+> `@foundry/*` packages are **not** installed from a private npm registry.
+> Use local `file:` packages or GitHub Release `.tgz` assets from `foundry-npm`
+> tags (see `foundryPackages` in `package.json`).
 
 ### Switch Foundry package source
 
@@ -53,29 +53,48 @@ Use local package sources while developing Foundry packages:
 npm run foundry:local
 ```
 
-Switch back to versioned packages from GitHub Packages:
+Install a versioned release from the `foundry-npm` GitHub Release tag
+(downloads `.tgz` assets with `gh` into `.foundry-release/`):
 
 ```bash
-npm run foundry:github
+npm run foundry:release
 ```
 
-`foundry:github` uses `NODE_AUTH_TOKEN` when set; otherwise it reuses your
-GitHub CLI login via `gh auth token` (requires `gh auth login` with
-`read:packages`). Both commands update `package.json`, remove stale
-`node_modules/@foundry` links, reinstall from the selected source, and refresh
-`package-lock.json`. Use `npm run foundry:status` to show the declared source
-and the installed target. The local package directory and GitHub version are
-configured in the `foundryPackages` section of `package.json`. Add
-`-- --no-install` to either switch command when only `package.json` should be
-changed.
+Both commands update `package.json`, remove stale `node_modules/@foundry`
+links, reinstall from the selected source, and refresh `package-lock.json`.
+Use `npm run foundry:status` to show the declared source. Configure
+`releaseRepo`, `packageVersions`, and `localDirectory` under
+`foundryPackages` in `package.json`. Add `-- --no-install` when only
+`package.json` should change.
 
-GitHub mode requires the `@foundry/*` packages to already be published to
-GitHub Packages under the `foundry` org (GitHub scopes must match the owner).
+Set a version for every `@foundry/*` dependency in `packageVersions`
+(full name or short name):
+
+```json
+"foundryPackages": {
+  "releaseRepo": "GIVA-Jewellery/foundry-npm",
+  "packageVersions": {
+    "@foundry/bigquery": "0.0.2",
+    "@foundry/logger": "0.0.1",
+    "@foundry/api-client": "0.0.2"
+  }
+}
+```
+
+`npm run foundry:release` downloads **only** those package `.tgz` files (plus
+any required transitive `@foundry/*` deps) and wires `dependencies` /
+`overrides` to them. If a package needs a different `@foundry/*` version than
+your pin (e.g. `bigquery@0.0.1` needs `logger@0.0.1` while you pin
+`logger@0.0.2`), both tarballs are kept and npm nested overrides nest the
+required version under that package.
+
+Release mode requires published GitHub Release(s) on `foundry-npm` for the
+configured version tag(s) (see that repo's release workflow).
 
 ### Docker Compose (includes the app image)
 
 ```bash
-export NODE_AUTH_TOKEN=<github_pat>
+# Ensure .foundry-release exists (npm run foundry:release) or use foundry:local
 docker compose up --build
 ```
 
