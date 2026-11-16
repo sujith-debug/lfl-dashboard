@@ -1,5 +1,5 @@
 {
-  "name": "foundry-app",
+  "name": "lfl-dashboard",
   "version": "0.1.0",
   "private": true,
   "description": "Foundry Next.js template — clone and customize for a new team project",
@@ -17,7 +17,10 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:migrate:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "lfl:import": "node --env-file=.env --require ./scripts/mock-server-only.cjs --import tsx scripts/lfl-import.ts",
+    "lfl:sync": "node --env-file=.env --require ./scripts/mock-server-only.cjs --import tsx scripts/lfl-import.ts sync",
+    "bq:check": "node --env-file=.env --require ./scripts/mock-server-only.cjs --import tsx scripts/bq-check.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -38,6 +41,7 @@
     "localDirectory": "../../foundry-npm/packages"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
     "@foundry/api-client": "file:.foundry-release/foundry-api-client-0.0.2.tgz",
     "@foundry/api-core": "file:.foundry-release/foundry-api-core-0.0.2.tgz",
     "@foundry/auth-next": "file:.foundry-release/foundry-auth-next-0.0.2.tgz",
@@ -47,6 +51,7 @@
     "@foundry/opa-client": "file:.foundry-release/foundry-opa-client-0.0.2.tgz",
     "@foundry/prisma": "file:.foundry-release/foundry-prisma-0.0.2.tgz",
     "@prisma/client": "^6.5.0",
+    "exceljs": "^4.4.0",
     "next": "^14.0.0",
     "next-auth": "^4.24.5",
     "prisma": "^6.5.0",

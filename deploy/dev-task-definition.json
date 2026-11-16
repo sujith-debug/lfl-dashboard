@@ -1,5 +1,5 @@
 {
-  "family": "dev-APP_NAME-service",
+  "family": "dev-lfl-dashboard-service",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "1024",
@@ -12,8 +12,8 @@
   "taskRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/EC2Role",
   "containerDefinitions": [
     {
-      "name": "APP_NAME",
-      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/dev/APP_NAME:latest",
+      "name": "lfl-dashboard",
+      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/dev/lfl-dashboard:latest",
       "cpu": 512,
       "memory": 1024,
       "essential": true,
@@ -31,22 +31,28 @@
         }
       ],
       "environment": [
-        { "name": "OPA_URL", "value": "http://localhost:8181/v1/data/permission/OPA_PACKAGE/allow" },
-        { "name": "OPA_ACCOUNT", "value": "APP_NAME" }
+        { "name": "OPA_URL", "value": "http://localhost:8181/v1/data/permission/lfl_dashboard/allow" },
+        { "name": "OPA_ACCOUNT", "value": "lfl-dashboard" },
+        { "name": "LFL_DATA_SOURCE", "value": "bigquery" },
+        { "name": "LFL_SYNC_INTERVAL_MINUTES", "value": "360" },
+        { "name": "BIGQUERY_DEFAULT_PROJECT", "value": "avnimetabase" },
+        { "name": "BIGQUERY_LOCATION", "value": "asia-south1" },
+        { "name": "BQ_ALLOWED_DATASETS_TABLES", "value": "intermediary.ebo_all_data,givametabse.orders,givametabse.tangoeye_data,raw_postgres_giva_db.offline_stores,raw_postgres_giva_db.order_stores,raw_postgres_giva_db.offline_staff,airbyte.shopify_products,airbyte.shopify_product_variants,guts.inventory_daily_snapshot" }
       ],
       "secrets": [
-        { "name": "KEYCLOAK_URL", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/APP_NAME/build/KEYCLOAK_URL" },
-        { "name": "KEYCLOAK_REALM", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/APP_NAME/build/KEYCLOAK_REALM" },
-        { "name": "KEYCLOAK_CLIENT_ID", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/APP_NAME/build/KEYCLOAK_CLIENT_ID" },
-        { "name": "KEYCLOAK_CLIENT_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/APP_NAME/build/KEYCLOAK_CLIENT_SECRET" },
-        { "name": "NEXTAUTH_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/APP_NAME/build/NEXTAUTH_SECRET" },
-        { "name": "NEXTAUTH_URL", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/APP_NAME/build/NEXTAUTH_URL" },
-        { "name": "DATABASE_URL", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/APP_NAME/build/DATABASE_URL" }
+        { "name": "KEYCLOAK_URL", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/lfl-dashboard/build/KEYCLOAK_URL" },
+        { "name": "BIGQUERY_SERVICE_ACCOUNT_JSON", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/lfl-dashboard/build/BIGQUERY_SERVICE_ACCOUNT_JSON" },
+        { "name": "KEYCLOAK_REALM", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/lfl-dashboard/build/KEYCLOAK_REALM" },
+        { "name": "KEYCLOAK_CLIENT_ID", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/lfl-dashboard/build/KEYCLOAK_CLIENT_ID" },
+        { "name": "KEYCLOAK_CLIENT_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/lfl-dashboard/build/KEYCLOAK_CLIENT_SECRET" },
+        { "name": "NEXTAUTH_SECRET", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/lfl-dashboard/build/NEXTAUTH_SECRET" },
+        { "name": "NEXTAUTH_URL", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/lfl-dashboard/build/NEXTAUTH_URL" },
+        { "name": "DATABASE_URL", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/dev/lfl-dashboard/build/DATABASE_URL" }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/dev/dev-APP_NAME-service",
+          "awslogs-group": "/ecs/dev/dev-lfl-dashboard-service",
           "awslogs-region": "ap-south-1",
           "awslogs-stream-prefix": "ecs"
         }
@@ -66,7 +72,7 @@
         }
       ],
       "environment": [
-        { "name": "SERVICE_NAME", "value": "opa-APP_NAME" },
+        { "name": "SERVICE_NAME", "value": "opa-lfl-dashboard" },
         { "name": "ENV", "value": "dev" },
         { "name": "AWS_REGION", "value": "ap-south-1" }
       ],
@@ -83,7 +89,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/dev/dev-APP_NAME-service",
+          "awslogs-group": "/ecs/dev/dev-lfl-dashboard-service",
           "awslogs-region": "ap-south-1",
           "awslogs-stream-prefix": "opa"
         }

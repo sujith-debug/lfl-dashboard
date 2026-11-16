@@ -1,7 +1,6 @@
 import "server-only";
 
 import type { Prisma, ProjectStatus } from "@prisma/client";
-
 /** Explicit Prisma select — keep query shape intentional. */
 export const projectSelect = {
   id: true,

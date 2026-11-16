@@ -14,6 +14,8 @@ supported_actions := {
 	"project_update",
 	"project_archive",
 	"analytics_query",
+	"lfl_view",
+	"lfl_admin",
 }
 
 # The template allows authenticated users to exercise its reference module.

@@ -30,3 +30,189 @@ model Project {
   @@index([createdAt])
   @@map("projects")
 }
+
+/// App-owned store attributes the warehouse doesn't carry (carpet area).
+/// Matched to BigQuery stores by name, ignoring case, spaces and punctuation.
+model StoreProfile {
+  id         String   @id @default(uuid()) @db.Uuid
+  storeName  String   @unique
+  carpetSqft Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("store_profiles")
+}
+
+/// Store master, loaded from the BigQuery stores feed (or an upload). Keyed by the
+/// normalised store name (lower case, letters and digits only), which is how
+/// the LFL and stock feeds refer to stores.
+model LflStore {
+  key            String    @id
+  name           String
+  code           String?
+  locationId     String?
+  region         String?
+  subregion      String?
+  city           String?
+  state          String?
+  am             String?
+  storeType      String?
+  status         String?
+  liveDate       DateTime? @db.Date
+  closeDate      DateTime? @db.Date
+  /// Last billed day (from the store feed): when a closed store actually stopped.
+  lastSaleDate   DateTime? @db.Date
+  /// First order billed at the store: the "live date" LFL Metrics Main (#8734) uses.
+  firstOrderDate DateTime? @db.Date
+  /// Company or franchise (offline_stores.store_type).
+  ownership      String?
+  latitude       Float?
+  longitude      Float?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("lfl_stores")
+}
+
+/// One store-day from the BigQuery daily feed: this year's numbers for
+/// `date` and last year's for the same calendar day.
+model LflStoreDay {
+  storeKey           String
+  date               DateTime @db.Date
+  storeName          String
+  region             String?
+  am                 String?
+  city               String?
+  ageBucket          String?
+  cohort             String?
+  lflFlag            String?
+  tySales            Float    @default(0)
+  lySales            Float    @default(0)
+  tyGold             Float    @default(0)
+  lyGold             Float    @default(0)
+  tySilver           Float    @default(0)
+  lySilver           Float    @default(0)
+  tyBills            Float    @default(0)
+  lyBills            Float    @default(0)
+  tyGoldBills        Float    @default(0)
+  lyGoldBills        Float    @default(0)
+  tyFootfall         Float    @default(0)
+  lyFootfall         Float    @default(0)
+  /// Silver bills, units per metal, and line sales before E/R and promo
+  /// (the numerator of ASP in #8734).
+  tySilverBills      Float    @default(0)
+  lySilverBills      Float    @default(0)
+  tyGoldUnits        Float    @default(0)
+  lyGoldUnits        Float    @default(0)
+  tySilverUnits      Float    @default(0)
+  lySilverUnits      Float    @default(0)
+  tyGoldLineSales    Float    @default(0)
+  lyGoldLineSales    Float    @default(0)
+  tySilverLineSales  Float    @default(0)
+  lySilverLineSales  Float    @default(0)
+  /// Gold made-to-order (MTO): sales, bills, units and line sales.
+  tyGoldMtoSales     Float    @default(0)
+  lyGoldMtoSales     Float    @default(0)
+  tyGoldMtoBills     Float    @default(0)
+  lyGoldMtoBills     Float    @default(0)
+  tyGoldMtoUnits     Float    @default(0)
+  lyGoldMtoUnits     Float    @default(0)
+  tyGoldMtoLineSales Float    @default(0)
+  lyGoldMtoLineSales Float    @default(0)
+  updatedAt          DateTime @updatedAt
+
+  @@id([storeKey, date])
+  @@index([date])
+  @@map("lfl_store_days")
+}
+
+/// Stock on hand per store, metal and SKU category on a snapshot day.
+model LflInventory {
+  snapshotDate DateTime @db.Date
+  storeKey     String
+  metal        String
+  category     String
+  units        Float
+
+  @@id([snapshotDate, storeKey, metal, category])
+  @@index([storeKey])
+  @@map("lfl_inventory")
+}
+
+/// Audit trail of every import (BigQuery pull or file upload).
+model LflImportRun {
+  id         String    @id @default(uuid()) @db.Uuid
+  dataset    String
+  source     String
+  label      String?
+  status     String
+  rows       Int       @default(0)
+  message    String?
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  @@index([dataset, startedAt])
+  @@map("lfl_import_runs")
+}
+
+/// Sales split by metal, karat / classic segment and category per store-day,
+/// TY and the same day 365 days earlier (from the BigQuery segment query).
+model LflSegmentDay {
+  storeKey String
+  date     DateTime @db.Date
+  metal    String
+  segment  String
+  category String
+  tySales  Float    @default(0)
+  lySales  Float    @default(0)
+  tyUnits  Float    @default(0)
+  lyUnits  Float    @default(0)
+
+  @@id([storeKey, date, metal, segment, category])
+  @@index([date])
+  @@map("lfl_segment_days")
+}
+
+/// One person on one month's HR pay register (EBO Store department).
+model LflStaffMonth {
+  month       DateTime  @db.Date
+  employeeNo  String
+  name        String?
+  designation String?
+  /// Branch as HR writes it; mapped to a store through lfl_branch_map.
+  branch      String
+  city        String?
+  joinDate    DateTime  @db.Date
+  leaveDate   DateTime? @db.Date
+
+  @@id([month, employeeNo])
+  @@index([branch])
+  @@map("lfl_staff_months")
+}
+
+/// HR branch name -> store key. "manual" rows are never overwritten by imports.
+model LflBranchMap {
+  branch    String   @id
+  storeKey  String?
+  method    String
+  updatedAt DateTime @updatedAt
+
+  @@map("lfl_branch_map")
+}
+
+/// Sales per salesperson per store-day (this year), from the staff on each POS order.
+model LflStaffSale {
+  date      DateTime @db.Date
+  storeKey  String
+  /// POS staff id (offline_staff.staff_id); "" for orders without a salesperson.
+  staffId   String
+  staffName String?
+  sales     Float
+  gold      Float
+  bills     Int
+  units     Float
+
+  @@id([date, storeKey, staffId])
+  @@index([staffId])
+  @@map("lfl_staff_sales")
+}

@@ -10,12 +10,12 @@ on:
 env:
   AWS_REGION: ap-south-1
   # --- replace these for your app ---
-  ECR_REPOSITORY: dev/APP_NAME
-  ECS_SERVICE: APP_NAME
+  ECR_REPOSITORY: dev/lfl-dashboard
+  ECS_SERVICE: lfl-dashboard
   ECS_CLUSTER: dev
   ECS_TASK_DEFINITION: deploy/dev-task-definition.json
-  CONTAINER_NAME: APP_NAME
-  PARAMETER_PREFIX: /dev/APP_NAME/build/
+  CONTAINER_NAME: lfl-dashboard
+  PARAMETER_PREFIX: /dev/lfl-dashboard/build/
   # ----------------------------------
 
 jobs:
