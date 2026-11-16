@@ -47,19 +47,28 @@ jobs:
               --query 'Parameter.Value' \
               --output text)"
 
-            printf '%s=%s\n' "$env_name" "$value" >> "$GITHUB_ENV"
+            # Keep secrets out of the logs (each line, for multi-line values), and use the
+            # delimiter form so a value with newlines can't break $GITHUB_ENV.
+            while IFS= read -r line; do
+              [[ -n "$line" ]] && echo "::add-mask::$line"
+            done <<< "$value"
+            {
+              echo "$env_name<<SSM_VALUE_EOF"
+              echo "$value"
+              echo "SSM_VALUE_EOF"
+            } >> "$GITHUB_ENV"
           }
 
-          while IFS=$'\t' read -r parameter_name _; do
+          # Names only: values (e.g. the BigQuery key) can span lines, so each is fetched on its own.
+          while read -r parameter_name; do
             [[ -z "$parameter_name" ]] && continue
             fetch_parameter "${parameter_name##*/}" "$parameter_name"
           done < <(
             aws ssm get-parameters-by-path \
               --path "$PARAMETER_PREFIX" \
-              --with-decryption \
               --recursive \
-              --query 'Parameters[*].[Name,Value]' \
-              --output text
+              --query 'Parameters[*].Name' \
+              --output text | tr '\t' '\n'
           )
 
       - name: Login to Amazon ECR
@@ -71,7 +80,10 @@ jobs:
 
       - name: Download @foundry release tarballs
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The @foundry packages are releases of the private GIVA-Jewellery/foundry-npm
+          # repo; this repo's own GITHUB_TOKEN can't read it, so set FOUNDRY_NPM_TOKEN
+          # (a token with read access to foundry-npm) as a repository secret.
+          GH_TOKEN: ${{ secrets.FOUNDRY_NPM_TOKEN || secrets.GITHUB_TOKEN }}
         run: npm run foundry:release -- --no-install && npm install --package-lock-only --legacy-peer-deps
 
       - name: Build and push image
@@ -98,11 +110,18 @@ jobs:
             . --push
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
+      - name: Fill in the AWS account ID
+        run: |
+          set -euo pipefail
+          ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
+          sed "s/<AWS_ACCOUNT_ID>/$ACCOUNT_ID/g" "$ECS_TASK_DEFINITION" > "$RUNNER_TEMP/task-definition.json"
+          echo "TASK_DEFINITION_FILE=$RUNNER_TEMP/task-definition.json" >> "$GITHUB_ENV"
+
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
         with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          task-definition: ${{ env.TASK_DEFINITION_FILE }}
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.build-image.outputs.image }}
 

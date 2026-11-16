@@ -472,7 +472,9 @@ Resource names follow the monorepo convention:
 
 Before the first deploy:
 
-1. Replace `<AWS_ACCOUNT_ID>` in both task definitions.
+1. Replace `<AWS_ACCOUNT_ID>` in both task definitions. (The standalone
+   workflows here fill it in from the deploy credentials; the monorepo's
+   shared workflow doesn't.)
 2. Create the ECR repos, ECS services and `/ecs/{env}/{env}-lfl-dashboard-service`
    log groups.
 3. Put SSM parameters in both places the deploy reads from:
@@ -487,7 +489,14 @@ Before the first deploy:
    ```bash
    ./scripts/env-to-ecs-secrets.sh dev lfl-dashboard AWS_ACCOUNT_ID
    ```
-4. Ensure the ECS task security group can reach RDS on 5432.
+4. Ensure the ECS task security group can reach RDS on 5432, and that the
+   tasks' outbound traffic is inside GIVA's BigQuery VPC Service Controls
+   perimeter (project `avnimetabase`); outside it every query is refused.
+   The service account needs BigQuery Job User and Data Viewer on the tables
+   in `BQ_ALLOWED_DATASETS_TABLES` (`npm run bq:check`).
+   The database user in `DATABASE_URL` must be able to create tables in
+   `public` (every deploy runs `prisma migrate deploy`):
+   `GRANT CREATE ON SCHEMA public TO foundry_offline_app_role;`.
 5. Add `package permission.lfl_dashboard` and the app actions
    (`access_panel`, `project_list`, `project_create`, …) to the central OPA
    bundle.
@@ -495,6 +504,14 @@ Before the first deploy:
    `dev-deploy.yml` and `prod-deploy.yml`. The shared
    `reusable-app-deploy.yml` downloads `.foundry-release/`, builds the image,
    runs `prisma migrate deploy` as a one-off task, then updates the service.
+7. Add the Keycloak redirect URI `https://<host>/api/auth/callback/keycloak`
+   to the client in `KEYCLOAK_CLIENT_ID`.
+
+Deploying this repository standalone (`.github/workflows/` here) also needs
+repository secrets `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, a
+`FOUNDRY_NPM_TOKEN` secret that can read the private
+`GIVA-Jewellery/foundry-npm` releases (the repository's own `GITHUB_TOKEN`
+can't), and an `ubuntu-arm64` runner. Its SSM values are masked in the logs.
 
 ## Deploy pattern
 

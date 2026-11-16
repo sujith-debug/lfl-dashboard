@@ -37,7 +37,7 @@
         { "name": "LFL_SYNC_INTERVAL_MINUTES", "value": "360" },
         { "name": "BIGQUERY_DEFAULT_PROJECT", "value": "avnimetabase" },
         { "name": "BIGQUERY_LOCATION", "value": "asia-south1" },
-        { "name": "BQ_ALLOWED_DATASETS_TABLES", "value": "intermediary.ebo_all_data,givametabse.orders,givametabse.tangoeye_data,raw_postgres_giva_db.offline_stores,raw_postgres_giva_db.order_stores,raw_postgres_giva_db.offline_staff,airbyte.shopify_products,airbyte.shopify_product_variants,guts.inventory_daily_snapshot" }
+        { "name": "BQ_ALLOWED_DATASETS_TABLES", "value": "intermediary.ebo_all_data,airbyte.shopify_orders,givametabse.orders,givametabse.tangoeye_data,raw_postgres_giva_db.offline_stores,raw_postgres_giva_db.order_stores,raw_postgres_giva_db.offline_staff,raw_postgres_giva_db.mto_orders_new,airbyte.shopify_products,airbyte.shopify_product_variants,guts.inventory_daily_snapshot" }
       ],
       "secrets": [
         { "name": "KEYCLOAK_URL", "valueFrom": "arn:aws:ssm:ap-south-1:<AWS_ACCOUNT_ID>:parameter/prod/lfl-dashboard/build/KEYCLOAK_URL" },
