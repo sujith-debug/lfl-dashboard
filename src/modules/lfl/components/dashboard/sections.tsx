@@ -5,7 +5,7 @@ import type { LflDashboardDto, StaffSalesRowDto, StoreRowDto, TrendGrain } from 
 import { dashboardReports, growth, regionsTable, type GroupView, sqftBands, type MetalView, type ReportTable, subregionsTable } from "../../reports";
 import { ColumnBars, Donut, GrowthBars, MixBars, PairColumns, ToneColumns } from "../ui/charts";
 import { DataTable } from "../ui/DataTable";
-import { count, inr, longDate, pct, share, tenure } from "../ui/format";
+import { count, inr, longDate, share, tenure } from "../ui/format";
 import { Card, Empty, Growth, Segmented, Stat } from "../ui/primitives";
 import { TrendChart, type TrendMetric } from "../ui/TrendChart";
 import { useLflPage } from "./context";
@@ -189,7 +189,7 @@ function categoryDonut(table: ReportTable) {
   );
 }
 
-/** TY vs LY store-count breakdown: continuing (LFL), new, and exited. */
+/** Compact TY vs LY store-count strip, always visible above the tabs. */
 export function StoreNetworkCard({ data }: { data: LflDashboardDto }) {
   const all = data.allStores;
   const lfl = all.filter((s) => s.isLfl).length;
@@ -198,58 +198,43 @@ export function StoreNetworkCard({ data }: { data: LflDashboardDto }) {
   const ty = lfl + newStores;
   const ly = lfl + exited;
   const net = ty - ly;
-
-  const maxBand = Math.max(lfl, newStores, exited, 1);
-  const bar = (n: number, color: string) => (
-    <span
-      className="sn-bar"
-      style={{ width: `${Math.max((n / maxBand) * 100, n > 0 ? 2 : 0)}%`, background: color }}
-    />
-  );
+  const netClass = net > 0 ? "pos" : net < 0 ? "neg" : "";
 
   return (
-    <Card
-      title="Store network"
-      subtitle="How many stores traded this year vs last year"
-    >
-      <div className="sn-heads">
-        <div className="sn-head">
-          <span className="sn-yr">This year</span>
-          <span className="sn-n">{ty}</span>
+    <div className="sn-strip" role="region" aria-label="Store network comparison">
+      <span className="sn-title">Store network</span>
+
+      <div className="sn-compare">
+        <div className="sn-period">
+          <small>TY</small>
+          <strong>{ty}</strong>
         </div>
-        <div className={`sn-delta ${net > 0 ? "pos" : net < 0 ? "neg" : ""}`}>
-          {net > 0 ? "▲" : net < 0 ? "▼" : "="} {Math.abs(net)} net {net > 0 ? "new" : net < 0 ? "fewer" : "change"}
-        </div>
-        <div className="sn-head right">
-          <span className="sn-yr">Last year</span>
-          <span className="sn-n">{ly}</span>
+        <span className={`sn-delta ${netClass}`}>
+          {net > 0 ? "▲" : net < 0 ? "▼" : "—"} {Math.abs(net)}
+        </span>
+        <div className="sn-period">
+          <small>LY</small>
+          <strong>{ly}</strong>
         </div>
       </div>
 
-      <div className="sn-bands">
-        <div className="sn-row" title={`${lfl} stores traded in both years (LFL)`}>
-          <span className="sn-label">Continuing <small>(LFL)</small></span>
-          <span className="sn-track">{bar(lfl, "var(--accent)")}</span>
-          <span className="sn-count">{lfl}</span>
-        </div>
-        <div className="sn-row" title={`${newStores} stores opened / trading TY only`}>
-          <span className="sn-label">New this year</span>
-          <span className="sn-track">{bar(newStores, "#4caf8a")}</span>
-          <span className="sn-count">{newStores}</span>
-        </div>
-        <div className="sn-row" title={`${exited} stores that traded LY but not TY`}>
-          <span className="sn-label">Exited / closed</span>
-          <span className="sn-track">{bar(exited, "#e05252")}</span>
-          <span className="sn-count">{exited}</span>
-        </div>
+      <div className="sn-pills">
+        <span className="sn-pill" title={`${lfl} stores traded in both years`}>
+          <i className="sn-dot" style={{ background: "var(--accent)" }} />
+          {lfl} continuing
+        </span>
+        <span className="sn-pill" title={`${newStores} stores trading TY only`}>
+          <i className="sn-dot" style={{ background: "#4caf8a" }} />
+          {newStores} new
+        </span>
+        {exited > 0 ? (
+          <span className="sn-pill" title={`${exited} stores that traded LY but not TY`}>
+            <i className="sn-dot" style={{ background: "#e05252" }} />
+            {exited} exited
+          </span>
+        ) : null}
       </div>
-
-      {ly > 0 ? (
-        <p className="sn-note">
-          Network grew {pct(net / ly)} YoY · {lfl > 0 ? `${Math.round((lfl / Math.max(ty, 1)) * 100)}% of TY stores are LFL` : "no LFL stores in view"}
-        </p>
-      ) : null}
-    </Card>
+    </div>
   );
 }
 
