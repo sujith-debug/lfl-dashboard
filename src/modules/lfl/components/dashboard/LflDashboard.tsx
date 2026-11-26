@@ -15,7 +15,7 @@ import { FilterBar } from "./FilterBar";
 import { festivalCompare } from "../festivals";
 import { KpiScorecard } from "./KpiGrid";
 import { ReportCard } from "./ReportCard";
-import { MetalSection, OpsSection, OverviewSection, StoresSection } from "./sections";
+import { MetalSection, OpsSection, OverviewSection, StoreNetworkCard, StoresSection } from "./sections";
 import { AskData } from "./AskData";
 import { TopBar } from "./TopBar";
 import { AgeSection, CitiesSection, ConcernsSection, RankingsSection, ViewSummary } from "./views";
@@ -238,6 +238,7 @@ export function LflDashboard({
           {data ? (
             <div className={loading ? "stack dim" : "stack"}>
               <KpiScorecard totals={data.totals} trend={data.trend.points} />
+              <StoreNetworkCard data={data} />
 
               <nav className="tabs" role="tablist" aria-label="Dashboard sections">
                 {TABS.map((t) => (

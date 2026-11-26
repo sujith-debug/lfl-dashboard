@@ -59,7 +59,6 @@ export function OverviewSection({ data }: { data: LflDashboardDto }) {
   const reports = dashboardReports(data);
   return (
     <>
-      <StoreNetworkCard data={data} />
       <IndiaMap data={data} />
       <ReportCard table={reports.summary} subtitle="Every headline number, this year vs the same dates last year" />
       <ReportCard table={reports.metals} subtitle="Sales, quantity and average selling price, this year vs last" />
