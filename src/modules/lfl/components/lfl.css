@@ -525,6 +525,10 @@
 .lfl .filterbar.collapsed .dates { display: flex; align-items: center; gap: 6px; }
 /* The period in the top bar; under the page title on small screens instead. */
 .lfl .topbar-period { display: inline-flex; align-items: center; gap: 4px; min-width: 0; padding: 4px 12px; border-radius: 999px; background: var(--sunk); color: var(--ink-2); font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lfl .tb-store-pills { display: flex; align-items: center; gap: 6px; }
+.lfl .tb-pill { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: var(--ink-2); background: var(--sunk); border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+.lfl .tb-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex: none; }
+@media (max-width: 1000px) { .lfl .tb-store-pills { display: none; } }
 .lfl .topbar-period .festival-tag { margin-right: 6px; font-size: 12px; }
 .lfl .page-head .meta.period-under-title { display: none; }
 @media (max-width: 900px) {

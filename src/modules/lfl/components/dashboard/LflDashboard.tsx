@@ -15,7 +15,7 @@ import { FilterBar } from "./FilterBar";
 import { festivalCompare } from "../festivals";
 import { KpiScorecard } from "./KpiGrid";
 import { ReportCard } from "./ReportCard";
-import { MetalSection, OpsSection, OverviewSection, StoreNetworkCard, StoresSection } from "./sections";
+import { MetalSection, OpsSection, OverviewSection, StoresSection } from "./sections";
 import { AskData } from "./AskData";
 import { TopBar } from "./TopBar";
 import { AgeSection, CitiesSection, ConcernsSection, RankingsSection, ViewSummary } from "./views";
@@ -156,10 +156,19 @@ export function LflDashboard({
   // Report rows are reused by several sections; build them once per response.
   const reports = useMemo(() => (data ? dashboardReports(data) : null), [data]);
 
+  const storeCounts = useMemo(() => {
+    if (!data) return undefined;
+    const all = data.allStores;
+    const lfl = all.filter((s) => s.isLfl).length;
+    const newStores = all.filter((s) => s.sales.ty > 0 && s.sales.ly === 0).length;
+    const exited = all.filter((s) => s.sales.ty === 0 && s.sales.ly > 0).length;
+    return { lfl, newStores, exited };
+  }, [data]);
+
   return (
     <LflProvider value={page}>
       <div className="lfl" data-theme={theme}>
-        <TopBar name={userName} source={data?.meta.source ?? null} loading={loading} theme={theme} onToggleTheme={toggleTheme} period={period} />
+        <TopBar name={userName} source={data?.meta.source ?? null} loading={loading} theme={theme} onToggleTheme={toggleTheme} period={period} storeCounts={storeCounts} />
         <main className="page">
           <header className="page-head">
             <div>
@@ -238,7 +247,6 @@ export function LflDashboard({
           {data ? (
             <div className={loading ? "stack dim" : "stack"}>
               <KpiScorecard totals={data.totals} trend={data.trend.points} />
-              <StoreNetworkCard data={data} />
 
               <nav className="tabs" role="tablist" aria-label="Dashboard sections">
                 {TABS.map((t) => (

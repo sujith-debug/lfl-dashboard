@@ -33,14 +33,15 @@ export function TopBar({
   theme,
   onToggleTheme,
   period,
+  storeCounts,
 }: {
   name: string;
-  /** The dates on screen vs the comparison dates, shown next to the board name. */
   period?: ReactNode;
   source: DataSource | null;
   loading: boolean;
   theme: "light" | "dark";
   onToggleTheme: () => void;
+  storeCounts?: { lfl: number; newStores: number; exited: number };
 }) {
   const { data: session } = useSession();
 
@@ -75,6 +76,24 @@ export function TopBar({
         </a>
         {period ? <span className="topbar-period">{period}</span> : null}
         <span className="spacer" />
+        {storeCounts ? (
+          <span className="tb-store-pills">
+            <span className="tb-pill" title={`${storeCounts.lfl} stores trading in both years (LFL)`}>
+              <i className="tb-dot" style={{ background: "var(--accent)" }} />
+              {storeCounts.lfl} continuing
+            </span>
+            <span className="tb-pill" title={`${storeCounts.newStores} stores trading this year only`}>
+              <i className="tb-dot" style={{ background: "#4caf8a" }} />
+              {storeCounts.newStores} new
+            </span>
+            {storeCounts.exited > 0 ? (
+              <span className="tb-pill" title={`${storeCounts.exited} stores that traded last year but not this year`}>
+                <i className="tb-dot" style={{ background: "#e05252" }} />
+                {storeCounts.exited} exited
+              </span>
+            ) : null}
+          </span>
+        ) : null}
         {source ? (
           <span className={`source${source === "sample" ? "" : " live"}`} title={SOURCE_TITLE[source]}>
             {SOURCE_LABEL[source]}
